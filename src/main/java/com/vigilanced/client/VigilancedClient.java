@@ -15,6 +15,7 @@
  */
 package com.vigilanced.client;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,12 +98,36 @@ public class VigilancedClient {
 			AjahUtils.requireParam(resourceKey, "resourceKey");
 			AjahUtils.requireParam(state, "state");
 
-			HttpPost post = new HttpPost(BASE_URL + "/api/1.0/resource/" + resourceKey + "/message");
+			HttpPost post = new HttpPost(BASE_URL + "/api/1.0/resource/" + resourceKey + "/detail");
 			List<NameValuePair> nvps = new ArrayList<>();
 			nvps.add(new BasicNameValuePair("state", state));
 			if (type != null) {
 				nvps.add(new BasicNameValuePair("type", type.name()));
 			}
+			if (!StringUtils.isBlank(detail)) {
+				nvps.add(new BasicNameValuePair("detail", detail));
+			}
+
+			HttpResponse response = this.http.execute(throttle(post));
+			result.handle(response);
+
+		} catch (Throwable t) {
+			result.handle(t);
+		}
+		return result;
+
+	}
+
+	public VigilancedClientResult updateMetric(@PathVariable final String resourceKey, final String name, final BigDecimal value, final String detail) {
+		VigilancedClientResult result = new VigilancedClientResult();
+		try {
+			AjahUtils.requireParam(resourceKey, "resourceKey");
+			AjahUtils.requireParam(name, "name");
+			AjahUtils.requireParam(value, "value");
+
+			HttpPost post = new HttpPost(BASE_URL + "/api/1.0/resource/" + resourceKey + "/metric/" + name);
+			List<NameValuePair> nvps = new ArrayList<>();
+			nvps.add(new BasicNameValuePair("value", value.toString()));
 			if (!StringUtils.isBlank(detail)) {
 				nvps.add(new BasicNameValuePair("detail", detail));
 			}
