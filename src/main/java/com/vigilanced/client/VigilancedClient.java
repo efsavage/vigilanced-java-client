@@ -17,6 +17,7 @@ package com.vigilanced.client;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import lombok.Data;
@@ -128,6 +129,36 @@ public class VigilancedClient {
 			HttpPost post = new HttpPost(BASE_URL + "/api/1.0/resource/" + resourceKey + "/metric/" + name);
 			List<NameValuePair> nvps = new ArrayList<>();
 			nvps.add(new BasicNameValuePair("value", value.toString()));
+			if (!StringUtils.isBlank(detail)) {
+				nvps.add(new BasicNameValuePair("detail", detail));
+			}
+
+			HttpResponse response = this.http.execute(throttle(post));
+			result.handle(response);
+
+		} catch (Throwable t) {
+			result.handle(t);
+		}
+		return result;
+
+	}
+
+	public VigilancedClientResult addTally(@PathVariable final String resourceKey, final String name, final BigDecimal value, final Date start, final Date end, final String detail) {
+		VigilancedClientResult result = new VigilancedClientResult();
+		try {
+			AjahUtils.requireParam(resourceKey, "resourceKey");
+			AjahUtils.requireParam(name, "name");
+			AjahUtils.requireParam(value, "value");
+
+			HttpPost post = new HttpPost(BASE_URL + "/api/1.0/resource/" + resourceKey + "/tally/" + name);
+			List<NameValuePair> nvps = new ArrayList<>();
+			nvps.add(new BasicNameValuePair("value", value.toString()));
+			if (start != null) {
+				nvps.add(new BasicNameValuePair("start", String.valueOf(start.getTime())));
+			}
+			if (end != null) {
+				nvps.add(new BasicNameValuePair("end", String.valueOf(end.getTime())));
+			}
 			if (!StringUtils.isBlank(detail)) {
 				nvps.add(new BasicNameValuePair("detail", detail));
 			}
